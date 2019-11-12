@@ -1,0 +1,36 @@
+{
+  "name": "aft-web-services",
+  "version": "1.0.0",
+  "description": "Automation Framework for Testing (AFT) module for testing web services over HTTP",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "pretest": "tsc",
+    "posttest": "",
+    "build": "tsc --declaration",
+    "test": "jasmine JASMINE_CONFIG_PATH=./jasmine.json",
+    "prepare": "tsc --declaration"
+  },
+  "keywords": [
+    "aft",
+    "automation",
+    "e2e",
+    "integration",
+    "functional",
+    "web-services",
+    "rest"
+  ],
+  "author": "Jason Holt Smith <bicarbon8@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "es6-promise": "^4.2.8",
+    "aft-core": "git+https://github.com/bicarbon8/aft-core.git"
+  },
+  "devDependencies": {
+    "@types/jasmine": "^3.4.4",
+    "jasmine": "^3.5.0",
+    "typescript": "^3.6.4",
+    "@types/node": "^12.7.12",
+    "@types/node-uuid": "0.0.28"
+  }
+}
