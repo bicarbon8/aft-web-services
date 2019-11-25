@@ -26,8 +26,8 @@
   },
   "homepage": "https://github.com/bicarbon8/aft-web-services#readme",
   "dependencies": {
-    "es6-promise": "^4.2.8",
-    "aft-core": "git+https://github.com/bicarbon8/aft-core.git"
+    "aft-core": "1.0.0",
+    "es6-promise": "^4.2.8"
   },
   "devDependencies": {
     "@types/jasmine": "^3.4.4",
