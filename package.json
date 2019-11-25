@@ -8,8 +8,7 @@
     "pretest": "tsc",
     "posttest": "",
     "build": "tsc --declaration",
-    "test": "jasmine JASMINE_CONFIG_PATH=./jasmine.json",
-    "prepare": "tsc --declaration"
+    "test": "jasmine JASMINE_CONFIG_PATH=./jasmine.json"
   },
   "keywords": [
     "aft",
@@ -22,6 +21,10 @@
   ],
   "author": "Jason Holt Smith <bicarbon8@gmail.com>",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bicarbon8/aft-web-services/issues"
+  },
+  "homepage": "https://github.com/bicarbon8/aft-web-services#readme",
   "dependencies": {
     "es6-promise": "^4.2.8",
     "aft-core": "git+https://github.com/bicarbon8/aft-core.git"
