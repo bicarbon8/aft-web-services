@@ -1,11 +1,26 @@
-import { IInitialiseOptions } from "aft-core";
-import { HttpMethod } from "./http-method";
 import { OutgoingHttpHeaders } from "http";
 
-export class HttpRequest implements IInitialiseOptions {
-    url: string = 'http://127.0.0.1';
-    allowAutoRedirect: boolean = true;
-    headers: OutgoingHttpHeaders = {};
-    method: string = HttpMethod.GET;
-    postData: string;
+/**
+ * to be used with the `HttpService.instance.performRequest` function
+ * like follows:
+ * ```
+ * await HttpService.instance.performRequest({url: 'https://some.domain/path'});
+ * ```
+ * or fully as:
+ * ```
+ * await HttpService.instance.performRequest({
+ *     url: 'https://some.domain/path',
+ *     allowAutoRedirect: false,
+ *     headers: {"Authorization": "basic AS0978FASLKLJA/=="},
+ *     method: HttpMethod.POST,
+ *     postData: JSON.stringify(someObject) 
+ * });
+ * ```
+ */
+export interface HttpRequest {
+    url?: string;
+    allowAutoRedirect?: boolean;
+    headers?: OutgoingHttpHeaders;
+    method?: string;
+    postData?: string;
 }

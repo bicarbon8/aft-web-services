@@ -1,36 +1,37 @@
 import { HttpResponse } from "../../src/http/http-response";
 
 describe('HttpResponse', () => {
-    it('can deserialise to Typed JavaScript object', () => {
-        let response: HttpResponse = new HttpResponse();
-        response.data = '{"foo":"bar", "baz":2}';
+    it('can deserialise JSON data to Typed JavaScript object', () => {
+        let response: HttpResponse = new HttpResponse({
+            data: '{"bar":"sample", "baz":2}'
+        });
 
         let foo: Foo = response.dataAs<Foo>();
 
-        expect(foo).not.toBeNull();
-        expect(foo.foo).toEqual('bar');
+        expect(foo).toBeDefined();
+        expect(foo.bar).toEqual('sample');
         expect(foo.baz).toEqual(2);
     });
 
-    // TODO: move to using ts-serializer in the future?
-    it('attempts to deserialise wrong Type', () => {
-        let response: HttpResponse = new HttpResponse();
-        response.data = '{"foo":"bar", "baz":2}';
+    it('can deserialise XML data to Document object', () => {
+        let response: HttpResponse = new HttpResponse({
+            headers: {"content-type": "text/xml"},
+            data: '<foo><bar>sample</bar><baz>2</baz></foo>'
+        });
 
-        let bar: Bar = response.dataAs<Bar>();
+        let yop: Yop = response.dataAs<Yop>();
 
-        expect(bar).not.toBeNull();
-        expect(bar.bar).toBeUndefined();
-        expect(bar.baz).not.toBeUndefined(); // equal to 2 which is wrong type
+        expect(yop).toBeDefined();
+        expect(yop.foo.bar).toEqual('sample');
+        expect(yop.foo.baz).toEqual(2);
     });
 });
 
 class Foo {
-    foo: string;
+    bar: string;
     baz: number;
 }
 
-class Bar {
-    bar: number;
-    baz: Foo;
+class Yop {
+    foo: Foo;
 }

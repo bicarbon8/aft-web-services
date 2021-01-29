@@ -1,22 +1,63 @@
 import { HttpRequest } from "./http-request";
 import { HttpResponse } from "./http-response";
-import { TestLog, TestLogOptions } from "aft-core";
+import { OptionsManager, TestLog } from "aft-core";
 import { HttpMethod } from "./http-method";
 import * as http from 'http';
 import * as https from 'https';
+import { HttpServiceOptions } from "./http-service-options";
 
-export class HttpService {
-    logger: TestLog = new TestLog(new TestLogOptions('aft-web-services.HttpService'));
+export class HttpService extends OptionsManager<HttpServiceOptions> {
+    logger: TestLog = new TestLog({name: 'aft-web-services.HttpService', pluginNames: []});
 
-    async performRequest(r: HttpRequest): Promise<HttpResponse> {
-        this.logger.trace("issuing '" + r.method + "' request to '" + r.url + "' with post body '" + r.postData + "' and headers '" + JSON.stringify(r.headers) +"'.");
+    getOptionsConfigurationKey(): string {
+        return 'httpService';
+    }
+
+    /**
+     * issues a request over http / https and returns the response as a
+     * `HttpResponse` object. Requests should include a URL at a minimum,
+     * but may also specify additional details such as headers, auto redirect,
+     * post data and the request method (GET|POST|DELETE|UPDATE)
+     * ex:
+     * ```
+     * await HttpService.instance.performRequest({url: 'https://some.domain/path'});
+     * ```
+     * or fully as:
+     * ```
+     * await HttpService.instance.performRequest({
+     *     url: 'https://some.domain/path',
+     *     allowAutoRedirect: false,
+     *     headers: {"Authorization": "basic AS0978FASLKLJA/=="},
+     *     method: HttpMethod.POST,
+     *     postData: JSON.stringify(someObject) 
+     * });
+     * ```
+     * @param req a `HttpResponse` object that specifies details of the request
+     */
+    async performRequest(req?: HttpRequest): Promise<HttpResponse> {
+        req = await this.setRequestDefaults(req);
+        await this.logger.trace(`issuing '${req.method}' request to '${req.url}' with post body '${req.postData}' and headers '${JSON.stringify(req.headers)}'.`);
         
-        let message: http.IncomingMessage = await this.request(r);
+        let message: http.IncomingMessage = await this.request(req);
 
-        let resp: HttpResponse = await this.response(message, r);
+        let resp: HttpResponse = await this.response(message, req);
 
-        this.logger.trace("received response of '" + resp.data + "' and headers '" + JSON.stringify(resp.headers) +"'.");
+        await this.logger.trace(`received response of '${resp.data}' and headers '${JSON.stringify(resp.headers)}'.`);
         return resp;
+    }
+
+    private async setRequestDefaults(req?: HttpRequest): Promise<HttpRequest> {
+        if (!req) {
+            req = {} as HttpRequest;
+        }
+        req.url = req.url || await this.getOption('defaultUrl', 'http://127.0.0.1');
+        req.headers = req.headers || await this.getOption('defaultHeaders', {});
+        req.method = req.method || await this.getOption('defaultMethod', HttpMethod.GET);
+        if (req.allowAutoRedirect === undefined) {
+            req.allowAutoRedirect = await this.getOption('defaultAllowRedirect', true);
+        }
+        req.postData = req.postData || await this.getOption('defaultPostData');
+        return req;
     }
 
     private async request(r: HttpRequest): Promise<http.IncomingMessage> {
@@ -40,36 +81,38 @@ export class HttpService {
         return message;
     }
 
-    private async response(r: http.IncomingMessage, req: HttpRequest): Promise<HttpResponse> {
-        r.setEncoding('utf8');
+    private async response(message: http.IncomingMessage, req: HttpRequest): Promise<HttpResponse> {
+        message.setEncoding('utf8');
 
         // handle 302 redirect response if enabled
-        if (r.statusCode == 302 && req.allowAutoRedirect) {
-            let req: HttpRequest = new HttpRequest();
-            req.url = r.headers.location;
-            req.headers['Cookie'] = '';
-            for (var header in r.headers) {
-                if (Object.prototype.hasOwnProperty.call(r.headers, header)) {
+        if (message.statusCode == 302 && req.allowAutoRedirect) {
+            let req: HttpRequest = {
+                url: message.headers.location,
+                headers: {'Cookie': ''}
+            };
+            for (var header in message.headers) {
+                if (Object.prototype.hasOwnProperty.call(message.headers, header)) {
                     if (header.toLocaleLowerCase() == 'set-cookie') {
-                        req.headers['Cookie'] += r.headers[header] + '; ';
+                        req.headers['Cookie'] += message.headers[header] + '; ';
                     }
                 }
             }
-            let message: http.IncomingMessage = await this.request(req);
-            return await this.response(message, req);
+            let redirectedMessage: http.IncomingMessage = await this.request(req);
+            return await this.response(redirectedMessage, req);
         } else {
-            let response: HttpResponse = new HttpResponse();
-            response.statusCode = r.statusCode;
-            response.headers = r.headers;
+            let response: HttpResponse = new HttpResponse({
+                statusCode: message.statusCode,
+                headers: message.headers
+            });
             await new Promise<any>((resolve, reject) => {
                 try {
-                    r.on('data', (chunk) => {
+                    message.on('data', (chunk) => {
                         if (!response.data) {
                             response.data = '';
                         }
                         response.data += chunk;
                     });
-                    r.on('end', resolve);
+                    message.on('end', resolve);
                 } catch (e) {
                     reject(e);
                 }
