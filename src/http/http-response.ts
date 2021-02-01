@@ -19,9 +19,9 @@ export class HttpResponse implements HttpResponseOptions {
     }
 
     dataAs<T>(): T {
-        if (this.headers && this.headers["content-type"]) {
-            let contentType: string = this.headers["content-type"];
-            if(contentType.match(/(xml|html)/).length > 0) {
+        if (this.headers && this.headers['content-type']) {
+            let contentType: string = this.headers['content-type'];
+            if(contentType.match(/(xml|html)/) !== null) {
                 let doc: Document = this._xmlParser.parseFromString(this.data, 'text/xml');
                 return XML.toObject(doc);
             }

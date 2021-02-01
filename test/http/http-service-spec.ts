@@ -88,4 +88,38 @@ describe('HttpService', () => {
         expect(response.statusCode).toEqual(200);
         expect(response.data).toEqual(mockResponse.data);
     });
+
+    /**
+     * NOTE: only for functional local testing. not to be enabled for committed code
+     */
+    xit('can get values from a real web API', async () => {
+        let resp: HttpResponse = await HttpService.instance.performRequest({url: 'https://reqres.in/api/users?page=2'});
+
+        expect(resp).toBeDefined();
+        expect(resp.statusCode).toBe(200);
+        expect(resp.headers).toBeDefined();
+        expect(resp.headers['content-type']).toBe('application/json; charset=utf-8');
+        expect(resp.data).toBeDefined();
+        let data: ListUsersResponse = resp.dataAs<ListUsersResponse>();
+        expect(data).toBeDefined();
+        expect(data.page).toBe(2);
+        expect(data.data).toBeDefined();
+        expect(data.data.length).toBeGreaterThan(0);
+    });
 });
+
+interface ListUsersResponse {
+    page: number;
+    per_page: number;
+    total: number;
+    total_pages: number;
+    data: User[];
+}
+
+interface User {
+    id: number;
+    email: string;
+    first_name: string;
+    last_name: string;
+    avatar: string;
+}
