@@ -10,7 +10,8 @@
         "moduleResolution": "node",
         "resolveJsonModule": true,
         "noEmit": false,
-        "declaration": true
+        "declaration": true,
+        "downlevelIteration": true
     },
     "exclude": [
         "node_modules",

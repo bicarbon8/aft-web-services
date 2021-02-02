@@ -5,33 +5,24 @@ provides simplified HTTP REST request and response testing support
 the `aft-web-services` package supports all standard HTTP methods like `GET`, `POST`, `PUT`, `DELETE` and `UPDATE` via the `HttpMethod` module
 ### GET
 ```typescript
-// setup request details
-let request = new HttpRequest();
-request.url = 'https://reqres.in/api/users?page=2';
+// perform GET request and return a response
+let response: HttpResponse = await HttpService.instance.performRequest({url: 'https://reqres.in/api/users?page=2'});
 
-// perform the actual request and get a response
-let response: HttpResponse = await HttpService.instance.performRequest(request);
-
-// deserialise the response into an object
+// deserialise a JSON or XML response into an object
 let respObj: ListUsersResponse = response.dataAs<ListUsersResponse>();
 ```
 
 ### POST
 ```typescript
-// setup request details
-let request = new HttpRequest();
-request.url = 'https://reqres.in/api/users';
-request.method = HttpMethod.POST; // default is GET
-request.headers[ContentType.CONTENTTYPE_KEY] = ContentType.application_json;
-request.postData = JSON.stringify({
-    name: "morpheus",
-    job: "leader"
+// perform POST request and return a response
+let response: HttpResponse = await HttpService.instance.performRequest({
+    url: 'https://reqres.in/api/users',
+    method: HttpMethod.POST,
+    headers: {'content-type':'application/json'},
+    postData: JSON.stringify({name: 'morpheus', job: 'leader'})
 });
 
-// perform the actual request and get a response
-let response: HttpResponse = await HttpService.instance.performRequest(request);
-
-// deserialise the response into an object
+// deserialise a JSON or XML response into an object
 let respObj: CreateUserResponse = response.dataAs<CreateUserResponse>();
 ```
 
@@ -39,3 +30,36 @@ let respObj: CreateUserResponse = response.dataAs<CreateUserResponse>();
 - using this package automatically logs the request and response details using the `aft-core.TestLog`
 - the `aft-web-services` classes rely on asynchronous promises meaning no worrying about callbacks
 - built-in support for redirects (HTTP Status Code 302) and http or https requests
+- XML and JSON response data can be easily deserialised to objects using the `HttpResponse.dataAs` function
+
+### NOTE:
+XML to object deserialisation will use the following rules:
+- element names become property names
+- attributes become properties preceeded by an `@` symbol inside the element object
+- element text content is rendered in a special property named `keyValue`
+
+*Ex:*
+```xml
+<xml>
+    <image src="./foo/bar/baz.jpg" />
+    <hr />
+    <span style="color:#808080">
+        This is coloured
+    </span>
+</xml>
+```
+will become:
+```json
+{
+    "xml": {
+        "image": {
+            "@src": "./foo/bar/baz.jpg",
+        },
+        "hr": {},
+        "span": {
+            "@style": "color:#808080",
+            "keyValue": "This is coloured"
+        }
+    }
+}
+```
