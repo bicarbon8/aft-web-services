@@ -1,16 +1,30 @@
 import { HttpRequest } from "./http-request";
 import { HttpResponse } from "./http-response";
-import { OptionsManager, TestLog } from "aft-core";
+import { OptionsManager, LoggingPluginManager } from "../../../aft-core/src";
 import { HttpMethod } from "./http-method";
 import * as http from 'http';
 import * as https from 'https';
-import { HttpServiceOptions } from "./http-service-options";
+import { nameof } from "ts-simple-nameof";
 
-export class HttpService extends OptionsManager<HttpServiceOptions> {
-    logger: TestLog = new TestLog({name: 'aft-web-services.HttpService', pluginNames: []});
+export interface HttpServiceOptions {
+    defaultUrl?: string;
+    defaultAllowRedirect?: boolean;
+    defaultHeaders?: http.OutgoingHttpHeaders;
+    defaultMethod?: string;
+    defaultPostData?: string;
+    
+    _logMgr?: LoggingPluginManager;
+    _optMgr?: OptionsManager;
+}
 
-    getOptionsConfigurationKey(): string {
-        return 'httpService';
+export class HttpService {
+    readonly optionsMgr: OptionsManager;
+
+    private _logMgr: LoggingPluginManager;
+
+    constructor(options?: HttpServiceOptions) {
+        this.optionsMgr = options?._optMgr || new OptionsManager(nameof(HttpService).toLowerCase(), options);
+        this._logMgr = options?._logMgr || new LoggingPluginManager({logName: nameof(HttpService)});
     }
 
     /**
@@ -36,13 +50,13 @@ export class HttpService extends OptionsManager<HttpServiceOptions> {
      */
     async performRequest(req?: HttpRequest): Promise<HttpResponse> {
         req = await this.setRequestDefaults(req);
-        await this.logger.trace(`issuing '${req.method}' request to '${req.url}' with post body '${req.postData}' and headers '${JSON.stringify(req.headers)}'.`);
+        await this._logMgr.trace(`issuing '${req.method}' request to '${req.url}' with post body '${req.postData}' and headers '${JSON.stringify(req.headers)}'.`);
         
         let message: http.IncomingMessage = await this.request(req);
 
         let resp: HttpResponse = await this.response(message, req);
 
-        await this.logger.trace(`received response of '${resp.data}' and headers '${JSON.stringify(resp.headers)}'.`);
+        await this._logMgr.trace(`received response of '${resp.data}' and headers '${JSON.stringify(resp.headers)}'.`);
         return resp;
     }
 
@@ -50,13 +64,13 @@ export class HttpService extends OptionsManager<HttpServiceOptions> {
         if (!req) {
             req = {} as HttpRequest;
         }
-        req.url = req.url || await this.getOption('defaultUrl', 'http://127.0.0.1');
-        req.headers = req.headers || await this.getOption('defaultHeaders', {});
-        req.method = req.method || await this.getOption('defaultMethod', HttpMethod.GET);
+        req.url = req.url || await this.optionsMgr.getOption('defaultUrl', 'http://127.0.0.1');
+        req.headers = req.headers || await this.optionsMgr.getOption('defaultHeaders', {});
+        req.method = req.method || await this.optionsMgr.getOption('defaultMethod', HttpMethod.GET);
         if (req.allowAutoRedirect === undefined) {
-            req.allowAutoRedirect = await this.getOption('defaultAllowRedirect', true);
+            req.allowAutoRedirect = await this.optionsMgr.getOption('defaultAllowRedirect', true);
         }
-        req.postData = req.postData || await this.getOption('defaultPostData');
+        req.postData = req.postData || await this.optionsMgr.getOption('defaultPostData');
         return req;
     }
 
