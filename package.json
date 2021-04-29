@@ -1,6 +1,6 @@
 {
   "name": "aft-web-services",
-  "version": "2.0.0",
+  "version": "4.0.0",
   "description": "Automated Functional Testing (AFT) module for testing web services over HTTP and HTTPS",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/bicarbon8/aft-web-services#readme",
   "dependencies": {
-    "aft-core": "^3.1.0",
+    "aft-core": "^4.0.0",
     "es6-promise": "^4.2.8",
     "xmldom": "^0.4.0"
   },

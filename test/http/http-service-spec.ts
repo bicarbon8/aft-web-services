@@ -1,8 +1,7 @@
-import { HttpService } from "../../src/http/http-service";
+import { HttpService, HttpServiceOptions } from "../../src/http/http-service";
 import { HttpRequest } from "../../src/http/http-request";
 import { HttpResponse } from "../../src/http/http-response";
 import { HttpMethod } from "../../src/http/http-method";
-import { HttpServiceOptions } from "../../src/http/http-service-options";
 
 describe('HttpService', () => {
     it('will set default request values if not passed in to performRequest', async () => {
@@ -16,10 +15,10 @@ describe('HttpService', () => {
         await svc.performRequest();
 
         expect(actual).toBeDefined();
-        expect(actual.url).toBe('http://127.0.0.1');
+        expect(actual.url).toEqual('http://127.0.0.1');
         expect(actual.headers).toEqual({});
-        expect(actual.allowAutoRedirect).toBe(true);
-        expect(actual.method).toBe(HttpMethod.GET);
+        expect(actual.allowAutoRedirect).toEqual(true);
+        expect(actual.method).toEqual(HttpMethod.GET);
         expect(actual.postData).toBeUndefined();
     });
 
@@ -41,11 +40,11 @@ describe('HttpService', () => {
         await svc.performRequest();
 
         expect(actual).toBeDefined();
-        expect(actual.url).toBe(options.defaultUrl);
-        expect(actual.headers).toBe(options.defaultHeaders);
-        expect(actual.allowAutoRedirect).toBe(options.defaultAllowRedirect);
-        expect(actual.method).toBe(options.defaultMethod);
-        expect(actual.postData).toBe(options.defaultPostData);
+        expect(actual.url).toEqual(options.defaultUrl);
+        expect(actual.headers).toEqual(options.defaultHeaders);
+        expect(actual.allowAutoRedirect).toEqual(options.defaultAllowRedirect);
+        expect(actual.method).toEqual(options.defaultMethod);
+        expect(actual.postData).toEqual(options.defaultPostData);
     });
 
     it('can send GET request', async () => {
