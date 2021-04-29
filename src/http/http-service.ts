@@ -1,6 +1,6 @@
 import { HttpRequest } from "./http-request";
 import { HttpResponse } from "./http-response";
-import { OptionsManager, LoggingPluginManager } from "../../../aft-core/src";
+import { OptionsManager, LoggingPluginManager } from "aft-core";
 import { HttpMethod } from "./http-method";
 import * as http from 'http';
 import * as https from 'https';
